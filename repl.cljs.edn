@@ -1,3 +1,3 @@
 ^{:watch-dirs ["src"]
-  :css-dirs ["resources/public/css"]}
+  :css-dirs ["docs/static"]}
 {:main heroes.main}

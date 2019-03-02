@@ -1,0 +1,3 @@
+{:main heroes.main
+ :output-to "docs/min-main.js"
+ :output-dir "docs/min"}
