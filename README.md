@@ -14,7 +14,7 @@ To clean all compiled files:
 
 To create a production build run:
 
-	  ./min.sh
+    ./min.sh
 
 
 ## License
