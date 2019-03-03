@@ -28,5 +28,10 @@
 
  ;; Logging output gets printed to the REPL, if you want to redirect it to a file:
  ;; :log-file "figwheel-main.log"
- :ring-handler heroes.server/static
+ :ring-handler       heroes.server/static
+ :rebel-readline     false
+ :cljs-devtools      false
+ :helpful-classpaths false
+ :validate-config    false
+ :validate-cli       false
 }

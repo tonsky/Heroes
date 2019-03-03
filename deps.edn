@@ -7,8 +7,7 @@
  :aliases 
  {:fig
   {:extra-deps
-   {com.bhauman/rebel-readline-cljs {:mvn/version "0.1.4"}
-    com.bhauman/figwheel-main {:mvn/version "0.1.9"}}
+   {com.bhauman/figwheel-main {:mvn/version "0.1.9"}}
    :extra-paths ["target"]}
   :repl {:main-opts ["-m" "figwheel.main" "-b" "repl" "-r"]}
   :min  {:main-opts ["-m" "figwheel.main" "-O" "advanced" "-bo" "min"]}}}

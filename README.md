@@ -6,16 +6,15 @@ A turn-based tactical game in ClojureScript, DataScript and Rum.
 
 To get an interactive development environment run:
 
-    clojure -A:fig:build
+    ./repl.sh
 
 To clean all compiled files:
 
-    rm -rf target/public
+    ./clean.sh
 
 To create a production build run:
 
-	  rm -rf target/public
-	  clojure -A:fig:min
+	  ./min.sh
 
 
 ## License
