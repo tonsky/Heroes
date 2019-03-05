@@ -119,16 +119,6 @@
       (ds/db-with initial-tx)
       (ds/conn-from-db)))
 
-(defn scale []
-  (let [ww   js/window.innerWidth
-        wh   js/window.innerHeight
-        step 0.5]
-    (loop [try-scale (+ 1 step)]
-      (if (or (> (* 314 try-scale) ww)
-              (> (* 176 try-scale) wh))
-        (- try-scale step)
-        (recur (+ try-scale step))))))
-
 (defn on-event [element event callback]
   {:did-mount
    (fn [state]
@@ -226,18 +216,40 @@
      (js/clearInterval (::animation-timer state))
      (dissoc state ::animation-timer))})
 
+(defn window-dim []
+  (let [w js/window.innerWidth
+        h js/window.innerHeight]
+    (if (< w h)
+      (with-meta (dim h w) {:rotate? true})
+      (dim w h))))
+
+(defn scale [window-dim]
+  (let [step 0.5]
+    (loop [try-scale (+ 1 step)]
+      (if (or (> (* 314 try-scale) (:w window-dim))
+              (> (* 176 try-scale) (:h window-dim)))
+        (- try-scale step)
+        (recur (+ try-scale step))))))
+
 (rum/defc app
   < rum/reactive
     (on-event js/window "resize" rum/request-render)
     animate-mixin
   []
-  (let [db    (rum/react *db)
-        scale (scale)]
+  (let [db         (rum/react *db)
+        window-dim (window-dim)
+        scale      (scale window-dim)
+        w          (quot (:w window-dim) scale)
+        h          (quot (:h window-dim) scale)]
     [:.bg
      {:style
-      {:width     (quot js/window.innerWidth scale)
-       :height    (quot js/window.innerHeight scale)
-       :transform (str "scale(" scale ")") }}
+      {:width     w
+       :height    h
+       :transform (if (:rotate? (meta window-dim))
+                    (str "scale(" scale ")"
+                         "rotate(90deg)"
+                         "translate(0,-" h "px)")
+                    (str "scale(" scale ")")) }}
      (screen db)]))
 
 (defn ^:after-load on-reload []
