@@ -1,3 +1,3 @@
 #!/usr/bin/env bash -ex
 
-rlwrap clojure -A:fig:repl
+clj -A:fig:repl

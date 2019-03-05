@@ -5,4 +5,5 @@
 
 body { margin: 0; } 
 .bg { background-image: url(bg.png); transform-origin: top left; background-position: center center; display: flex; justify-content: center; align-items: center; background-repeat: no-repeat; }
-.field { border: 1px solid white; width: 314px; height: 176px; }
+.screen { border: 1px solid white; width: 314px; height: 176px; position: relative; }
+.sprite { position: absolute; }
