@@ -2,6 +2,8 @@
 
 A turn-based tactical game in ClojureScript, DataScript and Rum.
 
+<img src="extras/screenshot.png">
+
 ## Development
 
 To get an interactive development environment run:
