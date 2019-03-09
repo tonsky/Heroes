@@ -1,3 +1,3 @@
 #!/usr/bin/env bash -ex
 
-clj -A:fig:min
+clj -A:fig -m figwheel.main -O advanced --build-once min

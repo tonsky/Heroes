@@ -2,7 +2,13 @@
   (:require
    [rum.core :as rum]))
 
-(defrecord Pos [x y])
+(defrecord Pos [x y]
+  IComparable
+  (-compare [_ other]
+    (if (== y (.-y other))
+      (- x (.-x other))
+      (- y (.-y other)))))
+
 (defrecord Dim [w h])
 
 (def pos ->Pos)
@@ -28,3 +34,7 @@
    (fn [state]
      (.removeEventListener element event (state [::on-event event]))
      (dissoc state [::on-event event]))})
+
+(defn single [xs]
+  (assert (<= (count xs) 1) (str "Expected 1 or 0 element, got" xs))
+  (first xs))

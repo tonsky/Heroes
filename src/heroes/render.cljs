@@ -8,32 +8,41 @@
    [heroes.core :as core :refer [dim pos]]))
 
 (rum/defc sprites [db]
-  (for [sprite (model/entities db :aevt :sprite/pos)
-        :let [{:sprite/keys [pos anim mirror? layers]
+  (for [sprite (->> (model/entities db :aevt :sprite/pos)
+                 (sort-by :sprite/pos))
+        :let [{id :db/id
+               :sprite/keys [pos anim mirror? layers]
                :sprite.anim/keys [frame]} sprite
               {:anim/keys [sheet]} anim
               {:sheet/keys [sprite-dim url]} sheet
-              layers (->> (or layers #{0}) sort reverse vec)]]
-    [:.sprite
-     {:key (str (:db/id sprite))
+              layers (->> (or layers #{0}) sort reverse vec)
+              stack (:stack/_unit-sprite sprite)]]
+    [:.stack
+     {:key (str id)
       :style
-      {:left   (:x pos)
-       :top    (- (:y pos) (:h sprite-dim))
-       :width  (:w sprite-dim)
-       :height (:h sprite-dim)
-       :background-image
-       (->> (str "url('" url "')")
-         (repeat (count layers))
-         (str/join ", "))
-       :background-position-x
-       (->> (str (* frame -1 (:w sprite-dim)) "px")
-         (repeat (count layers))
-         (str/join ", "))
-       :background-position-y
-       (->> layers
-         (map #(str (* % -1 (:h sprite-dim)) "px"))
-         (str/join ", "))
-       :transform (when mirror? "scale(-1,1)")}}]))
+       {:left   (:x pos)
+        :top    (- (:y pos) (:h sprite-dim))
+        :width  (:w sprite-dim)
+        :height (:h sprite-dim)}}
+     [:.sprite
+      {:style
+       {:background-image
+        (->> (str "url('" url "')")
+          (repeat (count layers))
+          (str/join ", "))
+        :background-position-x
+        (->> (str (* frame -1 (:w sprite-dim)) "px")
+          (repeat (count layers))
+          (str/join ", "))
+        :background-position-y
+        (->> layers
+          (map #(str (* % -1 (:h sprite-dim)) "px"))
+          (str/join ", "))
+        :transform (when mirror? "scale(-1,1)")}}]
+     [:.sprite_hover
+      {:on-mouse-enter (fn [_] (model/hover! stack))
+       :on-mouse-leave (fn [_] (model/unhover! stack))
+       :on-click       (fn [_] (model/select! stack))}]]))
 
 (rum/defc screen [db]
   [:.screen
