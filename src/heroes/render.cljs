@@ -11,6 +11,7 @@
 
 (def *window-dim (atom nil))
 (def *images (atom {}))
+(def screen-dim (dim 314 176))
 
 (defn image [url]
   (or (@*images url)
@@ -68,18 +69,27 @@
         window-dim (if rotate? (dim h w) (dim w h))
         step       1
         scale      (loop [try-scale (+ 1 step)]
-                     (if (or (> (* 314 try-scale) (:w window-dim))
-                             (> (* 176 try-scale) (:h window-dim)))
+                     (if (or (> (* (:w screen-dim) try-scale) (:w window-dim))
+                             (> (* (:h screen-dim) try-scale) (:h window-dim)))
                        (- try-scale step)
-                       (recur (+ try-scale step))))]
-    (assoc (dim (quot (:w window-dim) scale) (quot (:h window-dim) scale))
-      :rotate? rotate?
-      :scale   scale)))
+                       (recur (+ try-scale step))))
+        window-dim (dim
+                     (-> (:w window-dim) (quot scale))
+                     (-> (:h window-dim) (quot scale)))]
+    (assoc window-dim
+      :rotate?    rotate?
+      :scale      scale
+      :screen-pos (pos
+                    (-> (- (:w window-dim) (:w screen-dim)) (quot 2))
+                    (-> (- (:h window-dim) (:h screen-dim)) (quot 2))))))
 
 (defn render-bg! [ctx db]
-  (.drawImage ctx (image "static/bg.png") -73 -47)
+  (let [bg-dim (dim 460 270)]
+    (.drawImage ctx (image "static/bg.png")
+      (-> (- (:w screen-dim) (:w bg-dim)) (quot 2))
+      (-> (- (:h screen-dim) (:h bg-dim)) (quot 2))))
   (set! (.-strokeStyle ctx) "#fff")
-  (.strokeRect ctx 0.5 0.5 313 175))
+  (.strokeRect ctx 0.5 0.5 (dec (:w screen-dim)) (dec (:h screen-dim))))
 
 (defn render-sprites! [ctx db]
   (doseq [sprite (->> (model/entities db :aevt :sprite/pos)
@@ -118,7 +128,7 @@
   ([]
    (let [dim    (window-dim)
          _      (reset! *window-dim dim)
-         {:keys [scale w h rotate?]} dim
+         {:keys [scale w h rotate? screen-pos]} dim
          canvas (core/el "#canvas")
          ctx    (.getContext canvas "2d")
          style  (.-style canvas)]
@@ -130,18 +140,9 @@
      (set! (.-transformOrigin style) (str (* scale h 0.5) "px " (* scale h 0.5) "px"))
      (set! (.-transform style) (if rotate? "rotate(90deg)" ""))
 
-     (.translate ctx (-> (- w 314) (quot 2)) (-> (- h 176) (quot 2))))
+     (.translate ctx (:x screen-pos) (:y screen-pos)))
    (render!)))
-
-
-(defn on-mouse-over [e]
-  (js/console.log e))
-
 
 (defn start! []
   (set! js/window.onresize on-resize)
-  (set! (.-onmouseover (core/el "#canvas")) on-mouse-over)
   (on-resize))
-
-
-
