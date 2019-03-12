@@ -9,6 +9,7 @@
 
 (declare render!)
 
+(def *window-dim (atom nil))
 (def *images (atom {}))
 
 (defn image [url]
@@ -75,8 +76,6 @@
       :rotate? rotate?
       :scale   scale)))
 
-(def *window-dim (atom nil))
-
 (defn render-bg! [ctx db]
   (.drawImage ctx (image "static/bg.png") -73 -47)
   (set! (.-strokeStyle ctx) "#fff")
@@ -89,24 +88,22 @@
                  :sprite.anim/keys [frame]}    sprite
                 {:anim/keys [sheet]}           anim
                 {:sheet/keys [sprite-dim url]} sheet
-                img                            (image url)]
-          layer (->> (or layers #{0}) sort)]
-    #_(when mirror?
-      (.save ctx)
-      (.translate ctx 314 0)
+                img                            (image url)]]
+    (.save ctx)
+    (.translate ctx (:x pos) (:y pos))
+    (when mirror?
       (.scale ctx -1 1))
-    #_(.fillRect ctx (:x pos) (- (:y pos) (:h sprite-dim)) (:w sprite-dim) (:h sprite-dim))
-    (.drawImage ctx img
-      (* frame (:w sprite-dim))
-      (* layer (:h sprite-dim))
-      (:w sprite-dim)
-      (:h sprite-dim)
-      (:x pos)
-      (- (:y pos) (:h sprite-dim))
-      (:w sprite-dim)
-      (:h sprite-dim))
-    #_(when mirror?
-      (.restore ctx))))
+    (doseq [layer (->> (or layers #{0}) sort)]
+      (.drawImage ctx img
+        (* frame (:w sprite-dim))
+        (* layer (:h sprite-dim))
+        (:w sprite-dim)
+        (:h sprite-dim)
+        (- (quot (:w sprite-dim) 2))
+        (- (:h sprite-dim))
+        (:w sprite-dim)
+        (:h sprite-dim)))
+    (.restore ctx)))
 
 (defn render!
   ([] (render! @model/*db))
@@ -133,10 +130,18 @@
      (set! (.-transformOrigin style) (str (* scale h 0.5) "px " (* scale h 0.5) "px"))
      (set! (.-transform style) (if rotate? "rotate(90deg)" ""))
 
-     (.translate ctx (-> (- w 314) (quot 2)) (-> (- h 176) (quot 2)))
-     )
+     (.translate ctx (-> (- w 314) (quot 2)) (-> (- h 176) (quot 2))))
    (render!)))
+
+
+(defn on-mouse-over [e]
+  (js/console.log e))
+
 
 (defn start! []
   (set! js/window.onresize on-resize)
+  (set! (.-onmouseover (core/el "#canvas")) on-mouse-over)
   (on-resize))
+
+
+

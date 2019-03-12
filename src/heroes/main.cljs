@@ -41,49 +41,49 @@
    :anim/sheet        [:sheet/name :zombie]}
 
   {:stack/unit-sprite  
-   {:sprite/pos     (pos 45 74)
+   {:sprite/pos     (pos 73 74)
     :sprite/anim    [:anim/name :knight/idle]
     :sprite/layers  #{3 0}}}
   {:stack/selected? true
    :stack/unit-sprite
-   {:sprite/pos     (pos 45 46)
+   {:sprite/pos     (pos 73 46)
     :sprite/anim    [:anim/name :knight/idle]
     :sprite/layers  #{3 0 1}}}
   {:stack/unit-sprite  
-   {:sprite/pos     (pos 45 102)
+   {:sprite/pos     (pos 73 102)
     :sprite/anim    [:anim/name :knight/idle]
     :sprite/layers  #{3 0}}}
   {:stack/unit-sprite  
-   {:sprite/pos     (pos 45 130)
+   {:sprite/pos     (pos 73 130)
     :sprite/anim    [:anim/name :crossbowman/idle]
     :sprite/layers  #{3 0}}}
   {:stack/unit-sprite  
-   {:sprite/pos     (pos 45 158)
+   {:sprite/pos     (pos 73 158)
     :sprite/anim    [:anim/name :crossbowman/idle]
     :sprite/layers  #{3 0}}}
 
   {:stack/unit-sprite  
-   {:sprite/pos     (pos 213 46)
+   {:sprite/pos     (pos 241 46)
     :sprite/anim    [:anim/name :zombie/idle]
     :sprite/mirror? true
     :sprite/layers  #{0 2}}}
   {:stack/unit-sprite  
-   {:sprite/pos     (pos 213 74)
+   {:sprite/pos     (pos 241 74)
     :sprite/anim    [:anim/name :zombie/idle]
     :sprite/mirror? true
     :sprite/layers  #{0 3}}}
   {:stack/unit-sprite  
-   {:sprite/pos     (pos 185 102)
+   {:sprite/pos     (pos 213 102)
     :sprite/anim    [:anim/name :zombie/idle]
     :sprite/mirror? true
     :sprite/layers  #{0}}}
   {:stack/unit-sprite  
-   {:sprite/pos     (pos 213 130)
+   {:sprite/pos     (pos 241 130)
     :sprite/anim    [:anim/name :skeleton/idle]
     :sprite/mirror? true
     :sprite/layers  #{0 2}}}
   {:stack/unit-sprite  
-   {:sprite/pos     (pos 213 158)
+   {:sprite/pos     (pos 241 158)
     :sprite/anim    [:anim/name :skeleton/idle]
     :sprite/mirror? true
     :sprite/layers  #{0 2}}}
