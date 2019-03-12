@@ -32,4 +32,4 @@
       (ds/transact! *db tx))))
 
 (defn start! []
-  (js/setInterval #(animate model/*db) 16))
+  (js/setInterval #(time (animate model/*db)) 16))

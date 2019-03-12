@@ -1,6 +1,7 @@
 (ns ^:figwheel-hooks heroes.main
   (:require
    [heroes.anim :as anim]
+   [heroes.input :as input]
    [heroes.model :as model]
    [clojure.string :as str]
    [datascript.core :as ds]
@@ -90,11 +91,16 @@
 ])
 
 (defn ^:after-load on-reload []
-  (render/on-resize))
+  (render/reload!)
+  (input/reload!))
 
 (defn ^:export on-load []
   (reset! model/*db (-> (ds/empty-db model/schema)
                       (ds/db-with initial-tx)))
-  (render/start!)
+  (render/reload!)
+  (input/reload!)
   (anim/start!)
-  (ds/listen! model/*db ::rerender (fn [report] (render/render! (:db-after report)))))
+  (ds/listen! model/*db ::rerender
+    (fn [report]
+      (js/requestAnimationFrame
+        #(render/render! (:db-after report))))))

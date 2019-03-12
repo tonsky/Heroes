@@ -48,7 +48,7 @@
       :stack/hovered?    #{::boolean ::singleton}
       :stack/unit-sprite #{::ref ::component}}
      :sprite
-     {:pos          #{Pos}
+     {:pos          #{Pos ::index}
       :anim         #{::ref}
       :mirror?      #{::boolean}
       :layers       #{::int ::many}}

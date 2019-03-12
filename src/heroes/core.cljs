@@ -29,3 +29,10 @@
 
 (defn el [sel]
   (js/document.querySelector sel))
+
+(defn inside? [pos box-pos box-dim]
+  (and
+    (>= (:x pos) (:x box-pos))
+    (>= (:y pos) (:y box-pos))
+    (<= (:x pos) (+ (:x box-pos) (:w box-dim)))
+    (<= (:y pos) (+ (:y box-pos) (:h box-dim)))))
