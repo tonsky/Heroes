@@ -31,12 +31,5 @@
     (when-not (empty? tx)
       (ds/transact! *db tx))))
 
-(def mixin
-  {:did-mount
-   (fn [state]
-     (assoc state ::animation-timer
-       (js/setInterval #(animate model/*db) 16)))
-   :will-unmount
-   (fn [state]
-     (js/clearInterval (::animation-timer state))
-     (dissoc state ::animation-timer))})
+(defn start! []
+  (js/setInterval #(animate model/*db) 16))

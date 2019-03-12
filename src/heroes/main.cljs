@@ -1,6 +1,5 @@
 (ns ^:figwheel-hooks heroes.main
   (:require
-   [rum.core :as rum]
    [heroes.anim :as anim]
    [heroes.model :as model]
    [clojure.string :as str]
@@ -91,9 +90,11 @@
 ])
 
 (defn ^:after-load on-reload []
-  (rum/mount (render/app) (js/document.getElementById "mount")))
+  (render/on-resize))
 
 (defn ^:export on-load []
   (reset! model/*db (-> (ds/empty-db model/schema)
                       (ds/db-with initial-tx)))
-  (on-reload))
+  (render/start!)
+  (anim/start!)
+  (ds/listen! model/*db ::rerender (fn [report] (render/render! (:db-after report)))))

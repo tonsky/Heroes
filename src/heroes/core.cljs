@@ -1,6 +1,6 @@
 (ns heroes.core
   (:require
-   [rum.core :as rum]))
+   [goog.object :as go]))
 
 (defrecord Pos [x y]
   IComparable
@@ -23,18 +23,9 @@
 (defn inst-plus [inst ms]
   (js/Date. (+ (.getTime inst) ms)))
 
-(defn on-event [element event callback]
-  {:did-mount
-   (fn [state]
-     (let [comp (:rum/react-component state)
-           f    #(vswap! (rum/state comp) callback)]
-       (.addEventListener element event f)
-       (assoc state [::on-event event] f)))
-   :will-unmount
-   (fn [state]
-     (.removeEventListener element event (state [::on-event event]))
-     (dissoc state [::on-event event]))})
-
 (defn single [xs]
   (assert (<= (count xs) 1) (str "Expected 1 or 0 element, got" xs))
   (first xs))
+
+(defn el [sel]
+  (js/document.querySelector sel))

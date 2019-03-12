@@ -1,11 +1,10 @@
 * { box-sizing: border-box; }
-* { image-rendering: crisp-edges;
-    image-rendering: -webkit-optimize-contrast;
-    image-rendering: pixelated; }
 
 body { margin: 0; } 
-.bg { background-image: url(bg.png); transform-origin: top left; background-position: center center; display: flex; justify-content: center; align-items: center; background-repeat: no-repeat; }
-.screen { border: 1px solid white; width: 314px; height: 176px; position: relative; }
-.stack { position: absolute;  }
-.sprite { widht: 100%; height: 100%; }
-.sprite_hover { width: 28px; height: 38px; position: absolute; bottom: 0px; left: calc(50% - 14px); z-index: 1000; cursor: pointer; }
+
+canvas {
+  image-rendering: crisp-edges;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: pixelated;
+  display: block;
+}
