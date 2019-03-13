@@ -54,7 +54,7 @@
       :layers       #{::int ::many}}
      :sprite.anim
      {:frame        #{::int}
-      :frame-end    #{::instant}}}))
+      :frame-end    #{::instant ::index}}}))
 
 (def *db (ds/create-conn schema))
 

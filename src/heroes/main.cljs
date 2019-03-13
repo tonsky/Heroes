@@ -44,48 +44,68 @@
   {:stack/unit-sprite  
    {:sprite/pos     (pos 73 74)
     :sprite/anim    [:anim/name :knight/idle]
+    :sprite.anim/frame 0
+    :sprite.anim/frame-end (js/Date.)
     :sprite/layers  #{3 0}}}
   {:stack/selected? true
    :stack/unit-sprite
    {:sprite/pos     (pos 73 46)
     :sprite/anim    [:anim/name :knight/idle]
+    :sprite.anim/frame 0
+    :sprite.anim/frame-end (js/Date.)
     :sprite/layers  #{3 0 1}}}
   {:stack/unit-sprite  
    {:sprite/pos     (pos 73 102)
     :sprite/anim    [:anim/name :knight/idle]
+    :sprite.anim/frame 0
+    :sprite.anim/frame-end (js/Date.)
     :sprite/layers  #{3 0}}}
   {:stack/unit-sprite  
    {:sprite/pos     (pos 73 130)
     :sprite/anim    [:anim/name :crossbowman/idle]
+    :sprite.anim/frame 0
+    :sprite.anim/frame-end (js/Date.)
     :sprite/layers  #{3 0}}}
   {:stack/unit-sprite  
    {:sprite/pos     (pos 73 158)
     :sprite/anim    [:anim/name :crossbowman/idle]
+    :sprite.anim/frame 0
+    :sprite.anim/frame-end (js/Date.)
     :sprite/layers  #{3 0}}}
 
   {:stack/unit-sprite  
    {:sprite/pos     (pos 241 46)
     :sprite/anim    [:anim/name :zombie/idle]
+    :sprite.anim/frame 0
+    :sprite.anim/frame-end (js/Date.)
     :sprite/mirror? true
     :sprite/layers  #{0 2}}}
   {:stack/unit-sprite  
    {:sprite/pos     (pos 241 74)
     :sprite/anim    [:anim/name :zombie/idle]
+    :sprite.anim/frame 0
+    :sprite.anim/frame-end (js/Date.)
     :sprite/mirror? true
     :sprite/layers  #{0 3}}}
   {:stack/unit-sprite  
    {:sprite/pos     (pos 213 102)
     :sprite/anim    [:anim/name :zombie/idle]
+    :sprite.anim/frame 0
+    :sprite.anim/frame-end (js/Date.)
     :sprite/mirror? true
     :sprite/layers  #{0}}}
   {:stack/unit-sprite  
    {:sprite/pos     (pos 241 130)
     :sprite/anim    [:anim/name :skeleton/idle]
+    :sprite.anim/frame 0
+    :sprite.anim/frame-end (js/Date.)
     :sprite/mirror? true
     :sprite/layers  #{0 2}}}
   {:stack/unit-sprite  
    {:sprite/pos     (pos 241 158)
     :sprite/anim    [:anim/name :skeleton/idle]
+    :sprite.anim/frame 0
+    :sprite.anim/frame-end (js/Date.)
     :sprite/mirror? true
     :sprite/layers  #{0 2}}}
 ])
