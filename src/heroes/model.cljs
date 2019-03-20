@@ -2,7 +2,7 @@
   (:require
    [clojure.string :as str]
    [datascript.core :as ds]
-   [heroes.core :as core :refer [dim pos Dim Pos]]))
+   [heroes.core :as core :refer [dim pos rect Dim Pos Rect]]))
 
 (defn entities
   ([db index c1] (map #(ds/entity db (:e %)) (ds/datoms db index c1)))
@@ -21,7 +21,7 @@
     (= ::singleton tag) [:db/unique :db.unique/identity]
     (= ::ref tag)       [:db/valueType :db.type/ref]
     (= ::many tag)      [:db/cardinality :db.cardinality/many]
-    (#{::keyword ::string ::int ::instant ::boolean Dim Pos} tag) nil
+    (#{::keyword ::string ::int ::instant ::boolean Dim Pos Rect} tag) nil
     (string? tag)       [:db/doc tag]
     :else               (throw (ex-info (str "Unexpected tag: " tag) {:tag tag}))))
 
@@ -43,10 +43,16 @@
       :first-frame  #{::int}
       :durations-ms #{} ; [[1000 2000] [100 100] [100 100]]
       :sheet        #{::ref}}
+     :tile
+     {:coord        #{Pos ::identity}
+      :rect         #{Rect}}
      :stack
-     {:stack/selected?   #{::boolean ::singleton}
-      :stack/hovered?    #{::boolean ::singleton}
-      :stack/unit-sprite #{::ref ::component}}
+     {:selected?   #{::boolean ::singleton}
+      :hovered?    #{::boolean ::singleton}
+      :unit-sprite #{::ref ::component}
+      :count-label #{::ref ::component}
+      :tile        #{::ref}
+      :count       #{::int}}
      :sprite
      {:pos          #{Pos ::index}
       :anim         #{::ref}
@@ -54,9 +60,13 @@
       :layers       #{::int ::many}}
      :sprite.anim
      {:frame        #{::int}
-      :frame-end    #{::instant ::index}}}))
+      :frame-end    #{::instant ::index}}
+     :label
+     {:text         #{::string}
+      :pos          #{Pos}
+      :align        #{::keyword "One of :left/top :center/top :right/top :left/middle :center/middle :right/middle :left/bottom :center/bottom :right/bottom"}}}))
 
-(def *db (ds/create-conn schema))
+(defonce *db (ds/create-conn schema))
 
 (defn unhover! [stack]
   (when (:stack/hovered? stack)

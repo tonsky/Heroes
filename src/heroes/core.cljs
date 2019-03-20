@@ -11,8 +11,16 @@
 
 (defrecord Dim [w h])
 
+(defrecord Rect [x y w h]
+  IComparable
+  (-compare [_ other]
+    (if (== (+ y h) (+ (.-y other) (.-h other)))
+      (- x (.-x other))
+      (- (+ y h) (+ (.-y other) (.-h other))))))
+
 (def pos ->Pos)
 (def dim ->Dim)
+(def rect ->Rect)
 
 (defn less? [a b]
   (neg? (compare a b)))
@@ -36,3 +44,14 @@
     (>= (:y pos) (:y box-pos))
     (<= (:x pos) (+ (:x box-pos) (:w box-dim)))
     (<= (:y pos) (+ (:y box-pos) (:h box-dim)))))
+
+(defn some-map [m]
+  (reduce-kv
+    (fn [m k v]
+      (cond
+        (nil? v) (dissoc m k)
+        (map? v) (if-some [v' (not-empty (some-map v))]
+                   (assoc m k v')
+                   (dissoc m k))
+        :else m))
+    m m))

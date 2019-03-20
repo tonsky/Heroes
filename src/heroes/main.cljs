@@ -6,109 +6,136 @@
    [clojure.string :as str]
    [datascript.core :as ds]
    [heroes.render :as render]
-   [heroes.core :as core :refer [dim pos]]))
+   [heroes.core :as core :refer [dim pos rect]]))
 
-(def initial-tx [
-  {:sheet/name        :knight
-   :sheet/url         "static/knight.png"
-   :sheet/sprite-dim  (dim 56 56)}
-  {:anim/name         :knight/idle
-   :anim/first-frame  0
-   :anim/durations-ms [[500 1000] [300 400]]
-   :anim/sheet        [:sheet/name :knight]}
+(def sheets
+  [{:sheet/name        :knight
+    :sheet/url         "static/knight.png"
+    :sheet/sprite-dim  (dim 56 56)}
+   {:anim/name         :knight/idle
+    :anim/first-frame  0
+    :anim/durations-ms [[500 1000] [300 400]]
+    :anim/sheet        [:sheet/name :knight]}
 
-  {:sheet/name        :crossbowman
-   :sheet/url         "static/crossbowman.png"
-   :sheet/sprite-dim  (dim 56 56)}
-  {:anim/name         :crossbowman/idle
-   :anim/first-frame  0
-   :anim/durations-ms [[500 1000] [200 200] [200 200] [200 200]]
-   :anim/sheet        [:sheet/name :crossbowman]}
+   {:sheet/name        :crossbowman
+    :sheet/url         "static/crossbowman.png"
+    :sheet/sprite-dim  (dim 56 56)}
+   {:anim/name         :crossbowman/idle
+    :anim/first-frame  0
+    :anim/durations-ms [[500 1000] [200 200] [200 200] [200 200]]
+    :anim/sheet        [:sheet/name :crossbowman]}
 
-  {:sheet/name        :skeleton
-   :sheet/url         "static/skeleton.png"
-   :sheet/sprite-dim  (dim 56 56)}
-  {:anim/name         :skeleton/idle
-   :anim/first-frame  0
-   :anim/durations-ms [[200 500] [200 200] [200 200] [200 200]]
-   :anim/sheet        [:sheet/name :skeleton]}
+   {:sheet/name        :skeleton
+    :sheet/url         "static/skeleton.png"
+    :sheet/sprite-dim  (dim 56 56)}
+   {:anim/name         :skeleton/idle
+    :anim/first-frame  0
+    :anim/durations-ms [[200 500] [200 200] [200 200] [200 200]]
+    :anim/sheet        [:sheet/name :skeleton]}
 
-  {:sheet/name        :zombie
-   :sheet/url         "static/zombie.png"
-   :sheet/sprite-dim  (dim 56 56)}
-  {:anim/name         :zombie/idle
-   :anim/first-frame  0
-   :anim/durations-ms [[200 500] [200 200] [200 200] [200 200]]
-   :anim/sheet        [:sheet/name :zombie]}
+   {:sheet/name        :zombie
+    :sheet/url         "static/zombie.png"
+    :sheet/sprite-dim  (dim 56 56)}
+   {:anim/name         :zombie/idle
+    :anim/first-frame  0
+    :anim/durations-ms [[200 500] [200 200] [200 200] [200 200]]
+    :anim/sheet        [:sheet/name :zombie]}])
+    
+(def tiles
+  (for [x (range 0 7)
+        y (range 0 5)]
+    {:db/id      (str x " " y)
+     :tile/coord (pos x y)
+     :tile/rect  (rect
+                   (-> (* x 28) (+ 59))
+                   (-> (* y 28) (+ 18))
+                   28 28)}))
 
-  {:stack/unit-sprite  
-   {:sprite/pos     (pos 73 74)
-    :sprite/anim    [:anim/name :knight/idle]
-    :sprite.anim/frame 0
-    :sprite.anim/frame-end (js/Date.)
-    :sprite/layers  #{3 0}}}
-  {:stack/selected? true
-   :stack/unit-sprite
-   {:sprite/pos     (pos 73 46)
-    :sprite/anim    [:anim/name :knight/idle]
-    :sprite.anim/frame 0
-    :sprite.anim/frame-end (js/Date.)
-    :sprite/layers  #{3 0 1}}}
-  {:stack/unit-sprite  
-   {:sprite/pos     (pos 73 102)
-    :sprite/anim    [:anim/name :knight/idle]
-    :sprite.anim/frame 0
-    :sprite.anim/frame-end (js/Date.)
-    :sprite/layers  #{3 0}}}
-  {:stack/unit-sprite  
-   {:sprite/pos     (pos 73 130)
-    :sprite/anim    [:anim/name :crossbowman/idle]
-    :sprite.anim/frame 0
-    :sprite.anim/frame-end (js/Date.)
-    :sprite/layers  #{3 0}}}
-  {:stack/unit-sprite  
-   {:sprite/pos     (pos 73 158)
-    :sprite/anim    [:anim/name :crossbowman/idle]
-    :sprite.anim/frame 0
-    :sprite.anim/frame-end (js/Date.)
-    :sprite/layers  #{3 0}}}
+(defn place-stack [db {:keys [coord count unit selected? player]}]
+  (let [tile (ds/entity db [:tile/coord coord])
+        {:tile/keys [rect]} tile]
+    [(core/some-map
+       {:stack/selected? selected?
+        :stack/tile      (:db/id tile)
+        :stack/count     count
+        :stack/count-label
+        (if (= 0 player)
+          {:label/pos      (pos (+ (:x rect) 4) (+ (:y rect) 16))
+           :label/align    :right/bottom
+           :label/text     (str count)}
+          {:label/pos      (pos (+ (:x rect) (- 28 4)) (+ (:y rect) 16))
+           :label/align    :left/bottom
+           :label/text     (str count)})
+        :stack/unit-sprite
+        {:sprite/pos     (pos (+ (:x rect) 14) (+ (:y rect) 28))
+         :sprite/mirror? (= player 1)
+         :sprite/anim    [:anim/name (keyword (name unit) "idle")]
+         :sprite.anim/frame 0
+         :sprite.anim/frame-end (js/Date.)
+         :sprite/layers  (remove nil?
+                           [0
+                           (when selected? 1)
+                           (when player (+ player 2))])}})]))
 
-  {:stack/unit-sprite  
-   {:sprite/pos     (pos 241 46)
-    :sprite/anim    [:anim/name :zombie/idle]
-    :sprite.anim/frame 0
-    :sprite.anim/frame-end (js/Date.)
-    :sprite/mirror? true
-    :sprite/layers  #{0 2}}}
-  {:stack/unit-sprite  
-   {:sprite/pos     (pos 241 74)
-    :sprite/anim    [:anim/name :zombie/idle]
-    :sprite.anim/frame 0
-    :sprite.anim/frame-end (js/Date.)
-    :sprite/mirror? true
-    :sprite/layers  #{0 3}}}
-  {:stack/unit-sprite  
-   {:sprite/pos     (pos 213 102)
-    :sprite/anim    [:anim/name :zombie/idle]
-    :sprite.anim/frame 0
-    :sprite.anim/frame-end (js/Date.)
-    :sprite/mirror? true
-    :sprite/layers  #{0}}}
-  {:stack/unit-sprite  
-   {:sprite/pos     (pos 241 130)
-    :sprite/anim    [:anim/name :skeleton/idle]
-    :sprite.anim/frame 0
-    :sprite.anim/frame-end (js/Date.)
-    :sprite/mirror? true
-    :sprite/layers  #{0 2}}}
-  {:stack/unit-sprite  
-   {:sprite/pos     (pos 241 158)
-    :sprite/anim    [:anim/name :skeleton/idle]
-    :sprite.anim/frame 0
-    :sprite.anim/frame-end (js/Date.)
-    :sprite/mirror? true
-    :sprite/layers  #{0 2}}}
-])
+(def stacks
+  [[:db.fn/call place-stack
+    {:coord  (pos 0 1)
+     :count  2
+     :unit   :knight
+     :player 0
+     :selected? true}]
+   [:db.fn/call place-stack
+    {:coord  (pos 0 0)
+     :count  70
+     :unit   :knight
+     :player 0}]
+   [:db.fn/call place-stack
+    {:coord  (pos 0 2)
+     :count  222
+     :unit   :knight
+     :player 0}]
+   [:db.fn/call place-stack
+    {:coord  (pos 0 3)
+     :count  1
+     :unit   :crossbowman
+     :player 0}]
+   [:db.fn/call place-stack
+    {:coord  (pos 0 4)
+     :count  9
+     :unit   :crossbowman
+     :player 0}]
+
+   [:db.fn/call place-stack
+    {:coord  (pos 6 0)
+     :count  5
+     :unit   :zombie
+     :player 1}]
+   [:db.fn/call place-stack
+    {:coord  (pos 6 1)
+     :count  347
+     :unit   :zombie
+     :player 1}]
+   [:db.fn/call place-stack
+    {:coord  (pos 5 2)
+     :count  98
+     :unit   :zombie
+     :player 1}]
+   [:db.fn/call place-stack
+    {:coord  (pos 6 3)
+     :count  1234
+     :unit   :skeleton
+     :player 1}]
+   [:db.fn/call place-stack
+    {:coord  (pos 6 4)
+     :count  10000
+     :unit   :skeleton
+     :player 1}]])
+
+(def initial-tx
+  (concat
+    sheets
+    tiles
+    stacks))
 
 (defn ^:after-load on-reload []
   (render/reload!)

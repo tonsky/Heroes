@@ -74,9 +74,28 @@
         (:h sprite-dim)))
     (.restore ctx)))
 
+(defn render-labels! [ctx db]
+  (doseq [label (model/entities db :aevt :label/text)
+          :let [{:label/keys [text pos align]} label
+                rect-w (+ 1 (.-width (.measureText ctx text)))
+                rect-h 7
+                halign (namespace align)
+                valign (name align)
+                x (case halign
+                    "left"   (:x pos)
+                    "center" (- (:x pos) (quot rect-w 2))
+                    "right"  (- (:x pos) rect-w))
+                y (case valign
+                    "top"    (:y pos)
+                    "middle" (- (:y pos) (quot rect-h 2))
+                    "bottom" (- (:y pos) rect-h))]]
+    (set! (.-fillStyle ctx) "#FCEF56")
+    (.fillRect ctx x y rect-w rect-h)
+    (set! (.-fillStyle ctx) "#000")
+    (.fillText ctx text (+ x 1) (+ y (dec rect-h)))))
+
 (defn render-stats! [ctx db]
   (set! (.-fillStyle ctx) "#fff")
-  (set! (.-font ctx) "5px Heroes Sans")
   (let [{:keys [w h scale]} @*window-dim
         real-size   (str js/window.innerWidth "×" js/window.innerHeight)
         scaled-size (str w "×" h " at " scale "x")
@@ -91,8 +110,10 @@
     (let [canvas (core/el "#canvas")
           ctx    (.getContext canvas "2d")
           t0     (js/performance.now)
+          _      (set! (.-font ctx) "5px Heroes Sans")
           _      (render-bg! ctx db)
           _      (render-sprites! ctx db)
+          _      (render-labels! ctx db)
           _      (render-stats! ctx db)
           dt     (- (js/performance.now) t0)]
       (swap! *frame-times-ms #(-> % (pop) (conj dt))))))
