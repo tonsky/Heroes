@@ -11,6 +11,7 @@
 (def *window-dim (atom nil))
 (def *images (atom {}))
 (def screen-dim (dim 314 176))
+(def *frame-times-ms (atom (into (.-EMPTY PersistentQueue) (repeat 60 0))))
 
 (defn image [url]
   (or (@*images url)
@@ -25,7 +26,7 @@
         h          js/window.innerHeight
         rotate?    (< w h)
         window-dim (if rotate? (dim h w) (dim w h))
-        step       1
+        step       1 ;; TODO
         scale      (loop [try-scale (+ 1 step)]
                      (if (or (> (* (:w screen-dim) try-scale) (:w window-dim))
                              (> (* (:h screen-dim) try-scale) (:h window-dim)))
@@ -73,19 +74,33 @@
         (:h sprite-dim)))
     (.restore ctx)))
 
+(defn render-stats! [ctx db]
+  (set! (.-fillStyle ctx) "#fff")
+  (set! (.-font ctx) "5px Heroes Sans")
+  (let [{:keys [w h scale]} @*window-dim
+        real-size   (str js/window.innerWidth "×" js/window.innerHeight)
+        scaled-size (str w "×" h " at " scale "x")
+        datoms      (str (count db) " datoms")
+        frame-time  (str (-> (reduce max 0 @*frame-times-ms) (.toFixed 1)) " ms")]
+    (.fillText ctx (str real-size " (" scaled-size ")  " datoms "  " frame-time)
+      2 (- (:h screen-dim) 2))))
+
 (defn render!
   ([] (render! @model/*db))
   ([db]
     (let [canvas (core/el "#canvas")
-          ctx    (.getContext canvas "2d")]
-      (render-bg! ctx db)
-      (render-sprites! ctx db))))
+          ctx    (.getContext canvas "2d")
+          t0     (js/performance.now)
+          _      (render-bg! ctx db)
+          _      (render-sprites! ctx db)
+          _      (render-stats! ctx db)
+          dt     (- (js/performance.now) t0)]
+      (swap! *frame-times-ms #(-> % (pop) (conj dt))))))
 
 (defn on-resize
   ([e] (on-resize))
   ([]
-   (let [dim    (window-dim)
-         _      (reset! *window-dim dim)
+   (let [dim    (reset! *window-dim (window-dim))
          {:keys [scale w h rotate? screen-pos]} dim
          canvas (core/el "#canvas")
          ctx    (.getContext canvas "2d")

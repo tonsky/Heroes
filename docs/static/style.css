@@ -1,5 +1,10 @@
 * { box-sizing: border-box; }
 
+@font-face {
+  font-family: 'Heroes Sans';
+  src: url('HeroesSans-Regular.woff') format('woff');
+}
+
 body { margin: 0; } 
 
 canvas {
@@ -7,4 +12,5 @@ canvas {
   image-rendering: -webkit-optimize-contrast;
   image-rendering: pixelated;
   display: block;
+  -webkit-tap-highlight-color: transparent;
 }

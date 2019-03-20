@@ -12,14 +12,15 @@
 (defn sprite-eid [event]
   (let [db         @model/*db
         screen-pos (render/window->screen (pos (.-clientX event) (.-clientY event)))
-        hover-dim  (dim 28 42)
+        hover-dim  (dim 24 36)
         datoms     (ds/index-range db :sprite/pos
-                     (pos 59  (- (:y screen-pos) 42))
-                     (pos 255 (+ (:y screen-pos) 42)))]
+                     (pos 59  (- (:y screen-pos) (:h hover-dim)))
+                     (pos 255 (+ (:y screen-pos) (:h hover-dim))))]
     (some
       (fn [datom]
         (let [sprite-pos (:v datom)
-              hover-pos  (pos (- (:x sprite-pos) 14) (- (:y sprite-pos) 42))]
+              hover-pos  (pos (- (:x sprite-pos) (quot (:w hover-dim) 2))
+                              (- (:y sprite-pos) (:h hover-dim)))]
           (when (core/inside? screen-pos hover-pos hover-dim)
             (:e datom))))
       (some-> datoms rseq))))
@@ -40,11 +41,11 @@
     (model/hover! stack)))
 
 (defn on-mouse-click [e]
-  (let [sprite-eid (sprite-eid e)
-        db         @model/*db
-        sprite     (ds/entity db sprite-eid)
-        stack      (:stack/_unit-sprite sprite)]
-    (model/select! stack)))
+  (when-some [sprite-eid (sprite-eid e)]
+    (let [db         @model/*db
+          sprite     (ds/entity db sprite-eid)
+          stack      (:stack/_unit-sprite sprite)]
+      (model/select! stack))))
 
 (defn reload! []
   (set! js/window.onmousemove on-mouse-move)
@@ -56,4 +57,4 @@
     (fn [_ _ old new]
       (when (and (some? new) (not= old new))
         (on-mouse-enter new))))
-  (set! js/window.onclick on-mouse-click))
+  (set! (.-onclick (core/el "#canvas")) on-mouse-click))
