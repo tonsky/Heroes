@@ -12,5 +12,5 @@ pom.xml
 .cpcache/
 .rebel_readline_history
 /docs/min/
-/sources
+/references
 .DS_Store
