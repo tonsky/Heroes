@@ -44,8 +44,7 @@
 (def tiles
   (for [x (range 0 7)
         y (range 0 5)]
-    {:db/id      (str x " " y)
-     :tile/coord (pos x y)
+    {:tile/coord (pos x y)
      :tile/rect  (rect
                    (-> (* x 28) (+ 59))
                    (-> (* y 28) (+ 18))
@@ -74,8 +73,8 @@
          :sprite.anim/frame-end (js/Date.)
          :sprite/layers  (remove nil?
                            [0
-                           (when selected? 1)
-                           (when player (+ player 2))])}})]))
+                            (when selected? 1)
+                            (when player (+ player 2))])}})]))
 
 (def stacks
   [[:db.fn/call place-stack

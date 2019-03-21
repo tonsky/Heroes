@@ -11,7 +11,7 @@
 (def *window-dim (atom nil))
 (def *images (atom {}))
 (def screen-dim (dim 314 176))
-(def *frame-times-ms (atom (into (.-EMPTY PersistentQueue) (repeat 60 0))))
+(def *frame-times-ms (atom (into (.-EMPTY PersistentQueue) (repeat 12 0))))
 
 (defn image [url]
   (or (@*images url)
