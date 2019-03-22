@@ -49,6 +49,21 @@
   (set! (.-strokeStyle ctx) "#fff")
   (.strokeRect ctx 0.5 0.5 (dec (:w core/screen-dim)) (dec (:h core/screen-dim))))
 
+(defn render-tiles! [ctx db]
+  (set! (.-fillStyle ctx) "rgba(255,255,255,0.3)")
+  (doseq [tile (model/entities db :aevt :tile/pos)
+          :let [{:tile/keys [pos coord]} tile]]
+    (.fillText ctx (str (:x coord) ":" (:y coord)) (- (:x pos) 4) (+ (:y pos) 1))))
+
+(defn render-hovers! [ctx db]
+  (set! (.-fillStyle ctx) "rgba(0,0,0,0.2)")
+  (doseq [stack (model/entities db :aevt :stack/tile)
+          :let [{:tile/keys [pos]} (:stack/tile stack)]]
+    (.fillRect ctx
+      (- (:x pos) (quot (:w core/hover-dim) 2))
+      (+ (:y pos) 14 (- (:h core/hover-dim)))
+      (:w core/hover-dim) (:h core/hover-dim))))
+
 (defn render-sprites! [ctx db]
   (doseq [sprite (->> (model/entities db :aevt :sprite/pos)
                    (sort-by :sprite/pos))
@@ -112,6 +127,8 @@
       (core/clock-measure *frame-time
         (set! (.-font ctx) "5px Heroes Sans")
         (render-bg! ctx db)
+        (when @core/*debug? (render-tiles! ctx db))
+        (when @core/*debug? (render-hovers! ctx db))
         (render-sprites! ctx db)
         (render-labels! ctx db)
         (render-stats! ctx db)))))

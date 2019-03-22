@@ -12,16 +12,15 @@
 (defn sprite-eid [event]
   (let [db         @model/*db
         screen-pos (render/window->screen (pos (.-clientX event) (.-clientY event)))
-        hover-dim  (dim 24 36)
         datoms     (ds/index-range db :sprite/pos
-                     (pos 59  (- (:y screen-pos) (:h hover-dim)))
-                     (pos 255 (+ (:y screen-pos) (:h hover-dim))))]
+                     (pos 59  (- (:y screen-pos) (:h core/hover-dim)))
+                     (pos 255 (+ (:y screen-pos) (:h core/hover-dim))))]
     (some
       (fn [datom]
         (let [sprite-pos (:v datom)
-              hover-pos  (pos (- (:x sprite-pos) (quot (:w hover-dim) 2))
-                              (- (:y sprite-pos) (:h hover-dim)))]
-          (when (core/inside? screen-pos hover-pos hover-dim)
+              hover-pos  (pos (- (:x sprite-pos) (quot (:w core/hover-dim) 2))
+                              (- (:y sprite-pos) (:h core/hover-dim)))]
+          (when (core/inside? screen-pos hover-pos core/hover-dim)
             (:e datom))))
       (some-> datoms rseq))))
 
@@ -47,8 +46,15 @@
           stack      (:stack/_unit-sprite sprite)]
       (model/select! stack))))
 
+(defn on-key-down [e]
+  #_(println "KEY" (.-key e) "code" (.-code e))
+  (case (.-code e)
+    "KeyD" (swap! core/*debug? not)
+    nil))
+
 (defn reload! []
-  (set! js/window.onmousemove on-mouse-move)
+  (let [canvas (core/el "#canvas")]
+  (set! (.-onmousemove canvas) on-mouse-move)
   (add-watch *hover-sprite-eid ::mouseleave
     (fn [_ _ old new]
       (when (and (some? old) (not= old new))
@@ -57,4 +63,5 @@
     (fn [_ _ old new]
       (when (and (some? new) (not= old new))
         (on-mouse-enter new))))
-  (set! (.-onclick (core/el "#canvas")) on-mouse-click))
+  (set! (.-onclick canvas) on-mouse-click)
+  (set! js/window.onkeydown on-key-down)))

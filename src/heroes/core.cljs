@@ -4,6 +4,8 @@
   (:require-macros
    [heroes.core]))
 
+(defonce *debug? (atom false))
+
 (defrecord Pos [x y]
   IComparable
   (-compare [_ other]
@@ -26,6 +28,7 @@
 
 (def screen-dim (dim 314 176))
 (def tile-dim (dim 28 28))
+(def hover-dim (dim 24 36))
 
 (defn less? [a b]
   (neg? (compare a b)))

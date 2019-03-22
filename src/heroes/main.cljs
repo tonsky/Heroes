@@ -42,17 +42,12 @@
     :anim/sheet        [:sheet/name :zombie]}])
     
 (def tiles
-  (let [cols 7
-        rows 5
-        base (pos
-               (-> (:w core/screen-dim) (- (* cols (:w core/tile-dim))) (quot 2))
-               (-> (:h core/screen-dim) (- (* rows (:h core/tile-dim))) (quot 2)))]
-    (for [y (range 0 rows)
-          x (range 0 cols)]
-      {:tile/coord (pos x y)
-       :tile/pos   (pos
-                     (-> (* x (:w core/tile-dim)) (+ (:x base)))
-                     (-> (* y (:h core/tile-dim)) (+ (:y base))))})))
+  (for [y (range 0 5)
+        x (range 0 7)]
+    {:tile/coord (pos x y)
+     :tile/pos   (pos
+                   (-> (* x 28) (+ 73))
+                   (-> (* y 28) (+ 32)))}))
 
 (defn place-stack [db {:keys [coord count unit selected? player]}]
   (let [tile (ds/entity db [:tile/coord coord])
@@ -64,17 +59,17 @@
         :stack/count-label
         (if (= 0 player)
           {:label/pos   (pos
-                          (+ (:x tile-pos) 4)
-                          (+ (:y tile-pos) (- (:h core/tile-dim) 12)))
+                          (- (:x tile-pos) 10)
+                          (+ (:y tile-pos) 4))
            :label/align :right/bottom
            :label/text  (str count)}
           {:label/pos   (pos
-                          (+ (:x tile-pos) (- (:w core/tile-dim) 4))
-                          (+ (:y tile-pos) (- (:h core/tile-dim) 12)))
+                          (+ (:x tile-pos) 10)
+                          (+ (:y tile-pos) 4))
            :label/align :left/bottom
            :label/text  (str count)})
         :stack/unit-sprite
-        {:sprite/pos            (pos (+ (:x tile-pos) 14) (+ (:y tile-pos) 28))
+        {:sprite/pos            (pos (:x tile-pos) (+ (:y tile-pos) 14))
          :sprite/mirror?        (= player 1)
          :sprite/anim           [:anim/name (keyword (name unit) "idle")]
          :sprite.anim/frame     0
