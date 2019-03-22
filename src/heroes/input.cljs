@@ -7,44 +7,38 @@
    [heroes.render :as render]
    [heroes.core :as core :refer [dim pos]]))
 
-(def *hover-sprite-eid (atom nil))
+(def *hover-stack-eid (atom nil))
 
-(defn sprite-eid [event]
+(defn stack-eid [event]
   (let [db         @model/*db
         screen-pos (render/window->screen (pos (.-clientX event) (.-clientY event)))
-        datoms     (ds/index-range db :sprite/pos
-                     (pos 59  (- (:y screen-pos) (:h core/hover-dim)))
-                     (pos 255 (+ (:y screen-pos) (:h core/hover-dim))))]
+        datoms     (ds/index-range db :tile/pos
+                     (pos 0                    (- (:y screen-pos) (:h core/hover-dim)))
+                     (pos (:w core/screen-dim) (+ (:y screen-pos) (:h core/hover-dim))))]
     (some
       (fn [datom]
-        (let [sprite-pos (:v datom)
-              hover-pos  (pos (- (:x sprite-pos) (quot (:w core/hover-dim) 2))
-                              (- (:y sprite-pos) (:h core/hover-dim)))]
+        (let [tile-pos  (:v datom)
+              hover-pos (pos
+                          (- (:x tile-pos) (quot (:w core/hover-dim) 2))
+                          (- (:y tile-pos) 22))]
           (when (core/inside? screen-pos hover-pos core/hover-dim)
-            (:e datom))))
+            (let [tile  (ds/entity db (:e datom))
+                  stack (core/single (:stack/_tile tile))]
+              (:db/id stack)))))
       (some-> datoms rseq))))
 
 (defn on-mouse-move [e]
-  (reset! *hover-sprite-eid (sprite-eid e)))
+  (reset! *hover-stack-eid (stack-eid e)))
 
-(defn on-mouse-leave [sprite-eid]
-  (let [db     @model/*db
-        sprite (ds/entity db sprite-eid)
-        stack  (:stack/_unit-sprite sprite)]
-    (model/unhover! stack)))
+(defn on-mouse-leave [stack-eid]
+  (model/unhover! (ds/entity @model/*db stack-eid)))
 
-(defn on-mouse-enter [sprite-eid]
-  (let [db     @model/*db
-        sprite (ds/entity db sprite-eid)
-        stack  (:stack/_unit-sprite sprite)]
-    (model/hover! stack)))
+(defn on-mouse-enter [stack-eid]
+  (model/hover! (ds/entity @model/*db stack-eid)))
 
 (defn on-mouse-click [e]
-  (when-some [sprite-eid (sprite-eid e)]
-    (let [db         @model/*db
-          sprite     (ds/entity db sprite-eid)
-          stack      (:stack/_unit-sprite sprite)]
-      (model/select! stack))))
+  (when-some [stack-eid (stack-eid e)]
+    (model/select! (ds/entity @model/*db stack-eid))))
 
 (defn on-key-down [e]
   #_(println "KEY" (.-key e) "code" (.-code e))
@@ -55,11 +49,11 @@
 (defn reload! []
   (let [canvas (core/el "#canvas")]
   (set! (.-onmousemove canvas) on-mouse-move)
-  (add-watch *hover-sprite-eid ::mouseleave
+  (add-watch *hover-stack-eid ::mouseleave
     (fn [_ _ old new]
       (when (and (some? old) (not= old new))
         (on-mouse-leave old))))
-  (add-watch *hover-sprite-eid ::mouseenter
+  (add-watch *hover-stack-eid ::mouseenter
     (fn [_ _ old new]
       (when (and (some? new) (not= old new))
         (on-mouse-enter new))))

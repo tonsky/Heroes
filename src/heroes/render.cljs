@@ -61,7 +61,7 @@
           :let [{:tile/keys [pos]} (:stack/tile stack)]]
     (.fillRect ctx
       (- (:x pos) (quot (:w core/hover-dim) 2))
-      (+ (:y pos) 14 (- (:h core/hover-dim)))
+      (- (:y pos) 22)
       (:w core/hover-dim) (:h core/hover-dim))))
 
 (defn render-sprites! [ctx db]

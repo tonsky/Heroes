@@ -45,7 +45,7 @@
       :sheet        #{::ref}}
      :tile
      {:coord        #{Pos ::identity}
-      :pos          #{Pos}}
+      :pos          #{Pos ::index}}
      :stack
      {:selected?   #{::boolean ::singleton}
       :hovered?    #{::boolean ::singleton}
