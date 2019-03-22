@@ -42,39 +42,47 @@
     :anim/sheet        [:sheet/name :zombie]}])
     
 (def tiles
-  (for [x (range 0 7)
-        y (range 0 5)]
-    {:tile/coord (pos x y)
-     :tile/rect  (rect
-                   (-> (* x 28) (+ 59))
-                   (-> (* y 28) (+ 18))
-                   28 28)}))
+  (let [cols 7
+        rows 5
+        base (pos
+               (-> (:w core/screen-dim) (- (* cols (:w core/tile-dim))) (quot 2))
+               (-> (:h core/screen-dim) (- (* rows (:h core/tile-dim))) (quot 2)))]
+    (for [y (range 0 rows)
+          x (range 0 cols)]
+      {:tile/coord (pos x y)
+       :tile/pos   (pos
+                     (-> (* x (:w core/tile-dim)) (+ (:x base)))
+                     (-> (* y (:h core/tile-dim)) (+ (:y base))))})))
 
 (defn place-stack [db {:keys [coord count unit selected? player]}]
   (let [tile (ds/entity db [:tile/coord coord])
-        {:tile/keys [rect]} tile]
+        {tile-pos :tile/pos} tile]
     [(core/some-map
        {:stack/selected? selected?
         :stack/tile      (:db/id tile)
         :stack/count     count
         :stack/count-label
         (if (= 0 player)
-          {:label/pos      (pos (+ (:x rect) 4) (+ (:y rect) 16))
-           :label/align    :right/bottom
-           :label/text     (str count)}
-          {:label/pos      (pos (+ (:x rect) (- 28 4)) (+ (:y rect) 16))
-           :label/align    :left/bottom
-           :label/text     (str count)})
+          {:label/pos   (pos
+                          (+ (:x tile-pos) 4)
+                          (+ (:y tile-pos) (- (:h core/tile-dim) 12)))
+           :label/align :right/bottom
+           :label/text  (str count)}
+          {:label/pos   (pos
+                          (+ (:x tile-pos) (- (:w core/tile-dim) 4))
+                          (+ (:y tile-pos) (- (:h core/tile-dim) 12)))
+           :label/align :left/bottom
+           :label/text  (str count)})
         :stack/unit-sprite
-        {:sprite/pos     (pos (+ (:x rect) 14) (+ (:y rect) 28))
-         :sprite/mirror? (= player 1)
-         :sprite/anim    [:anim/name (keyword (name unit) "idle")]
-         :sprite.anim/frame 0
+        {:sprite/pos            (pos (+ (:x tile-pos) 14) (+ (:y tile-pos) 28))
+         :sprite/mirror?        (= player 1)
+         :sprite/anim           [:anim/name (keyword (name unit) "idle")]
+         :sprite.anim/frame     0
          :sprite.anim/frame-end (js/Date.)
-         :sprite/layers  (remove nil?
-                           [0
-                            (when selected? 1)
-                            (when player (+ player 2))])}})]))
+         :sprite/layers         (remove nil?
+                                  [0
+                                   (when selected? 1)
+                                   (when player (+ player 2))])}})]))
 
 (def stacks
   [[:db.fn/call place-stack

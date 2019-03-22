@@ -45,7 +45,7 @@
       :sheet        #{::ref}}
      :tile
      {:coord        #{Pos ::identity}
-      :rect         #{Rect}}
+      :pos          #{Pos}}
      :stack
      {:selected?   #{::boolean ::singleton}
       :hovered?    #{::boolean ::singleton}
@@ -67,10 +67,15 @@
       :align        #{::keyword "One of :left/top :center/top :right/top :left/middle :center/middle :right/middle :left/bottom :center/bottom :right/bottom"}}}))
 
 (defonce *db (ds/create-conn schema))
+(defonce *tx-time (core/clock-window 10))
+
+(defn transact! [tx]
+  (core/clock-measure *tx-time
+    (ds/transact! *db tx)))
 
 (defn unhover! [stack]
   (when (:stack/hovered? stack)
-    (ds/transact! *db
+    (transact!
       (concat
         [[:db/retract (:db/id stack) :stack/hovered? true]]
         (when-not (:stack/selected? stack)
@@ -81,14 +86,14 @@
         sprite (:stack/unit-sprite stack)]
     (when-some [hovered (singleton @*db :stack/hovered?)]
       (unhover! hovered))
-    (ds/transact! *db
+    (transact!
       [[:db/add (:db/id stack) :stack/hovered? true]
        [:db/add (:db/id sprite) :sprite/layers 1]])))
 
 (defn select! [stack]
   (let [db     @*db
         sprite (:stack/unit-sprite stack)]
-    (ds/transact! *db
+    (transact!
       (concat
         (when-some [selected (singleton @*db :stack/selected?)]
           [[:db/retract (:db/id selected) :stack/selected? true]

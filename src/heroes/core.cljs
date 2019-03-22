@@ -1,6 +1,8 @@
 (ns heroes.core
   (:require
-   [goog.object :as go]))
+   [goog.object :as go])
+  (:require-macros
+   [heroes.core]))
 
 (defrecord Pos [x y]
   IComparable
@@ -22,6 +24,9 @@
 (def dim ->Dim)
 (def rect ->Rect)
 
+(def screen-dim (dim 314 176))
+(def tile-dim (dim 28 28))
+
 (defn less? [a b]
   (neg? (compare a b)))
 
@@ -34,6 +39,9 @@
 (defn single [xs]
   (assert (<= (count xs) 1) (str "Expected 1 or 0 element, got" xs))
   (first xs))
+
+(defn queue [xs]
+  (into (.-EMPTY PersistentQueue) xs))
 
 (defn el [sel]
   (js/document.querySelector sel))
@@ -55,3 +63,9 @@
                    (dissoc m k))
         :else m))
     m m))
+
+(defn clock-window [size]
+  (atom (queue (repeat size 0))))
+
+(defn clock-time [*window]
+  (reduce max 0 @*window))

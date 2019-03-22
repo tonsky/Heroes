@@ -5,9 +5,8 @@
    [heroes.model :as model]
    [heroes.core :as core :refer [dim pos]]))
 
-(defn animate [*db]
-  (let [db     @*db
-        now    (js/Date.)
+(defn animate [db]
+  (let [now    (js/Date.)
         datoms (ds/index-range db :sprite.anim/frame-end nil now)
         tx     (for [datom datoms
                      :let [sprite    (ds/entity db (:e datom))
@@ -21,7 +20,7 @@
                   :sprite.anim/frame frame'
                   :sprite.anim/frame-end (core/inst-plus now duration')})]
     (when-not (empty? tx)
-      (ds/transact! *db tx))))
+      (model/transact! tx))))
 
 (defn start! []
-  (js/setInterval #(animate model/*db)) 100)
+  (js/setInterval #(animate @model/*db)) 100)

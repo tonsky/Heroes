@@ -8,10 +8,9 @@
 
 (declare render!)
 
-(def *window-dim (atom nil))
-(def *images (atom {}))
-(def screen-dim (dim 314 176))
-(def *frame-times-ms (atom (into (.-EMPTY PersistentQueue) (repeat 12 0))))
+(defonce *window-dim (atom nil))
+(defonce *images (atom {}))
+(defonce *frame-time (core/clock-window 10))
 
 (defn image [url]
   (or (@*images url)
@@ -28,8 +27,8 @@
         window-dim (if rotate? (dim h w) (dim w h))
         step       1 ;; TODO
         scale      (loop [try-scale (+ 1 step)]
-                     (if (or (> (* (:w screen-dim) try-scale) (:w window-dim))
-                             (> (* (:h screen-dim) try-scale) (:h window-dim)))
+                     (if (or (> (* (:w core/screen-dim) try-scale) (:w window-dim))
+                             (> (* (:h core/screen-dim) try-scale) (:h window-dim)))
                        (- try-scale step)
                        (recur (+ try-scale step))))
         window-dim (dim
@@ -39,16 +38,16 @@
       :rotate?    rotate?
       :scale      scale
       :screen-pos (pos
-                    (-> (- (:w window-dim) (:w screen-dim)) (quot 2))
-                    (-> (- (:h window-dim) (:h screen-dim)) (quot 2))))))
+                    (-> (- (:w window-dim) (:w core/screen-dim)) (quot 2))
+                    (-> (- (:h window-dim) (:h core/screen-dim)) (quot 2))))))
 
 (defn render-bg! [ctx db]
   (let [bg-dim (dim 460 270)]
     (.drawImage ctx (image "static/bg.png")
-      (-> (- (:w screen-dim) (:w bg-dim)) (quot 2))
-      (-> (- (:h screen-dim) (:h bg-dim)) (quot 2))))
+      (-> (- (:w core/screen-dim) (:w bg-dim)) (quot 2))
+      (-> (- (:h core/screen-dim) (:h bg-dim)) (quot 2))))
   (set! (.-strokeStyle ctx) "#fff")
-  (.strokeRect ctx 0.5 0.5 (dec (:w screen-dim)) (dec (:h screen-dim))))
+  (.strokeRect ctx 0.5 0.5 (dec (:w core/screen-dim)) (dec (:h core/screen-dim))))
 
 (defn render-sprites! [ctx db]
   (doseq [sprite (->> (model/entities db :aevt :sprite/pos)
@@ -100,23 +99,22 @@
         real-size   (str js/window.innerWidth "×" js/window.innerHeight)
         scaled-size (str w "×" h " at " scale "x")
         datoms      (str (count db) " datoms")
-        frame-time  (str (-> (reduce max 0 @*frame-times-ms) (.toFixed 1)) " ms")]
-    (.fillText ctx (str real-size " (" scaled-size ")  " datoms "  " frame-time)
-      2 (- (:h screen-dim) 2))))
+        frame-time  (str "frame " (-> (core/clock-time *frame-time) (.toFixed 1)) " ms")
+        tx-time     (str "tx "    (-> (core/clock-time model/*tx-time) (.toFixed 1)) " ms")]
+    (.fillText ctx (str real-size " (" scaled-size ")  " datoms "  " frame-time "  " tx-time)
+      2 (- (:h core/screen-dim) 2))))
 
 (defn render!
   ([] (render! @model/*db))
   ([db]
     (let [canvas (core/el "#canvas")
-          ctx    (.getContext canvas "2d")
-          t0     (js/performance.now)
-          _      (set! (.-font ctx) "5px Heroes Sans")
-          _      (render-bg! ctx db)
-          _      (render-sprites! ctx db)
-          _      (render-labels! ctx db)
-          _      (render-stats! ctx db)
-          dt     (- (js/performance.now) t0)]
-      (swap! *frame-times-ms #(-> % (pop) (conj dt))))))
+          ctx    (.getContext canvas "2d")]
+      (core/clock-measure *frame-time
+        (set! (.-font ctx) "5px Heroes Sans")
+        (render-bg! ctx db)
+        (render-sprites! ctx db)
+        (render-labels! ctx db)
+        (render-stats! ctx db)))))
 
 (defn on-resize
   ([e] (on-resize))
