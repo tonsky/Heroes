@@ -46,16 +46,35 @@
     "KeyD" (swap! core/*debug? not)
     nil))
 
+(defn update-cursor! []
+  (let [canvas (core/el "#canvas")
+        scale  (-> (:scale @render/*window-dim) (js/Math.floor) (min 4))]
+    (if (some? @*hover-stack-eid)
+      (set! (.-cursor (.-style canvas))
+        (str "url(static/cursor_pointer@" scale "x.png) " (* 4 scale) " " (* 4 scale) ", pointer"))
+      (set! (.-cursor (.-style canvas))
+        (str "url(static/cursor_default@" scale "x.png) " (* 4 scale) " " (* 4 scale) ", auto")))))
+
+
 (defn reload! []
   (let [canvas (core/el "#canvas")]
-  (set! (.-onmousemove canvas) on-mouse-move)
-  (add-watch *hover-stack-eid ::mouseleave
-    (fn [_ _ old new]
-      (when (and (some? old) (not= old new))
-        (on-mouse-leave old))))
-  (add-watch *hover-stack-eid ::mouseenter
-    (fn [_ _ old new]
-      (when (and (some? new) (not= old new))
-        (on-mouse-enter new))))
-  (set! (.-onclick canvas) on-mouse-click)
-  (set! js/window.onkeydown on-key-down)))
+    (set! (.-onmousemove canvas) on-mouse-move)
+    (add-watch *hover-stack-eid ::mouseleave
+      (fn [_ _ old new]
+        (when (and (some? old) (not= old new))
+          (on-mouse-leave old))))
+    (add-watch *hover-stack-eid ::mouseenter
+      (fn [_ _ old new]
+        (when (and (some? new) (not= old new))
+          (on-mouse-enter new))))
+    (add-watch *hover-stack-eid ::cursor
+      (fn [_ _ old new]
+        (when (not= (some? old) (some? new))
+          (update-cursor!))))
+    (add-watch render/*window-dim ::cursor
+      (fn [_ _ old new]
+        (when (not= (:scale old) (:scale new))
+          (update-cursor!))))
+    (update-cursor!)
+    (set! (.-onclick canvas) on-mouse-click)
+    (set! js/window.onkeydown on-key-down)))

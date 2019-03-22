@@ -151,5 +151,6 @@
   (anim/start!)
   (ds/listen! model/*db ::rerender
     (fn [report]
-      (js/requestAnimationFrame
-        #(render/render! (:db-after report))))))
+      (js/setTimeout
+        #(render/render! (:db-after report))
+        0))))

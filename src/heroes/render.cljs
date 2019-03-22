@@ -6,11 +6,10 @@
    [datascript.core :as ds]
    [heroes.core :as core :refer [dim pos]]))
 
-(declare render!)
-
-(defonce *window-dim (atom nil))
 (defonce *images (atom {}))
 (defonce *frame-time (core/clock-window 10))
+
+(declare render!)
 
 (defn image [url]
   (or (@*images url)
@@ -40,6 +39,8 @@
       :screen-pos (pos
                     (-> (- (:w window-dim) (:w core/screen-dim)) (quot 2))
                     (-> (- (:h window-dim) (:h core/screen-dim)) (quot 2))))))
+
+(defonce *window-dim (atom (window-dim)))
 
 (defn render-bg! [ctx db]
   (let [bg-dim (dim 460 270)]
