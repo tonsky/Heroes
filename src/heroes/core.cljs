@@ -7,15 +7,20 @@
 (defonce *debug? (atom false))
 
 (defrecord Pos [x y]
+  Object
+  (toString [_] (str x ":" y))
   IComparable
   (-compare [_ other]
     (if (== y (.-y other))
       (- x (.-x other))
       (- y (.-y other)))))
 
-(defrecord Dim [w h])
+(defrecord Dim [w h]
+  Object
+  (toString [_] (str w "×" h)))
 
 (defrecord Rect [x y w h]
+
   IComparable
   (-compare [_ other]
     (if (== (+ y h) (+ (.-y other) (.-h other)))
@@ -26,7 +31,7 @@
 (def dim ->Dim)
 (def rect ->Rect)
 
-(def screen-dim (dim 314 176))
+(def screen-dim (dim 314 174))
 (def tile-dim (dim 28 28))
 (def hover-dim (dim 24 32))
 

@@ -1,7 +1,7 @@
 {
 .appVersion = "939";
 DisplayStrings = (
-" "
+$
 );
 copyright = "Copyright © 2019 by Nikita Prokopov. All rights reserved.";
 date = "2019-03-20 18:04:42 +0000";
@@ -2281,6 +2281,42 @@ width = 200;
 }
 );
 unicode = 0020;
+},
+{
+glyphname = dollar;
+lastChange = "2019-03-22 22:58:24 +0000";
+layers = (
+{
+layerId = "18FF748A-4ED4-42AC-B8D8-EAC2010FE1E3";
+paths = (
+{
+closed = 1;
+nodes = (
+"100 0 LINE",
+"100 -100 LINE",
+"200 -100 LINE",
+"200 0 LINE",
+"300 0 LINE",
+"300 200 LINE",
+"0 200 LINE",
+"0 400 LINE",
+"100 400 LINE",
+"100 500 LINE",
+"200 500 LINE",
+"200 400 LINE",
+"300 400 LINE",
+"300 300 LINE",
+"100 300 LINE",
+"100 100 LINE",
+"0 100 LINE",
+"0 0 LINE"
+);
+}
+);
+width = 400;
+}
+);
+unicode = 0024;
 },
 {
 glyphname = plus;

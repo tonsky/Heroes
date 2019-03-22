@@ -7,6 +7,7 @@
    [heroes.core :as core :refer [dim pos]]))
 
 (defonce *images (atom {}))
+(defonce *window-dim (atom nil))
 (defonce *frame-time (core/clock-window 10))
 
 (declare render!)
@@ -23,24 +24,23 @@
   (let [w          js/window.innerWidth
         h          js/window.innerHeight
         rotate?    (< w h)
-        window-dim (if rotate? (dim h w) (dim w h))
+        screen-dim (if rotate? (dim h w) (dim w h))
         step       1 ;; TODO
         scale      (loop [try-scale (+ 1 step)]
-                     (if (or (> (* (:w core/screen-dim) try-scale) (:w window-dim))
-                             (> (* (:h core/screen-dim) try-scale) (:h window-dim)))
+                     (if (or (> (* (:w core/screen-dim) try-scale) (:w screen-dim))
+                             (> (* (:h core/screen-dim) try-scale) (:h screen-dim)))
                        (- try-scale step)
                        (recur (+ try-scale step))))
         window-dim (dim
-                     (-> (:w window-dim) (quot scale))
-                     (-> (:h window-dim) (quot scale)))]
+                     (-> (:w screen-dim) (quot scale))
+                     (-> (:h screen-dim) (quot scale)))]
     (assoc window-dim
+      :window     (dim w h)
       :rotate?    rotate?
       :scale      scale
       :screen-pos (pos
                     (-> (- (:w window-dim) (:w core/screen-dim)) (quot 2))
                     (-> (- (:h window-dim) (:h core/screen-dim)) (quot 2))))))
-
-(defonce *window-dim (atom (window-dim)))
 
 (defn render-bg! [ctx db]
   (let [bg-dim (dim 460 270)]
@@ -54,7 +54,7 @@
   (set! (.-fillStyle ctx) "rgba(255,255,255,0.3)")
   (doseq [tile (model/entities db :aevt :tile/pos)
           :let [{:tile/keys [pos coord]} tile]]
-    (.fillText ctx (str (:x coord) ":" (:y coord)) (- (:x pos) 4) (+ (:y pos) 1))))
+    (.fillText ctx (str coord) (- (:x pos) 4) (+ (:y pos) 1))))
 
 (defn render-hovers! [ctx db]
   (set! (.-fillStyle ctx) "rgba(0,0,0,0.2)")
@@ -111,13 +111,13 @@
 
 (defn render-stats! [ctx db]
   (set! (.-fillStyle ctx) "#fff")
-  (let [{:keys [w h scale]} @*window-dim
-        real-size   (str js/window.innerWidth "×" js/window.innerHeight)
-        scaled-size (str w "×" h " at " scale "x")
-        datoms      (str (count db) " datoms")
-        frame-time  (str "frame " (-> (core/clock-time *frame-time) (.toFixed 1)) " ms")
-        tx-time     (str "tx "    (-> (core/clock-time model/*tx-time) (.toFixed 1)) " ms")]
-    (.fillText ctx (str real-size " (" scaled-size ")  " datoms "  " frame-time "  " tx-time)
+  (let [{:keys [w h scale rotate? window] :as window-dim} @*window-dim
+        frame-time (core/clock-time *frame-time)
+        tx-time    (core/clock-time model/*tx-time)]
+    (.fillText ctx (str window " (" window-dim " at " scale "×)"
+                     "  " (count db) " datoms"
+                     "  frame " (.toFixed frame-time 1) " ms"
+                     "  tx " (.toFixed tx-time 1) " ms")
       2 (- (:h core/screen-dim) 2))))
 
 (defn render!
@@ -135,26 +135,32 @@
         (render-stats! ctx db)))))
 
 (defn on-resize
-  ([e] (on-resize))
-  ([]
-   (let [dim    (reset! *window-dim (window-dim))
-         {:keys [scale w h rotate? screen-pos]} dim
-         canvas (core/el "#canvas")
-         ctx    (.getContext canvas "2d")
-         style  (.-style canvas)]
-     (set! (.-width canvas)  w)
-     (set! (.-height canvas) h)
-     (set! (.-width style)  (str (* scale w) "px"))
-     (set! (.-height style) (str (* scale h) "px"))
+  ([] (on-resize nil))
+  ([_]
+   (when (not=
+           (:window @*window-dim)
+           (dim js/window.innerWidth js/window.innerHeight))
+     (let [dim    (reset! *window-dim (window-dim))
+           {:keys [scale w h rotate? screen-pos]} dim
+           canvas (core/el "#canvas")
+           ctx    (.getContext canvas "2d")
+           style  (.-style canvas)]
+       (set! (.-width canvas)  w)
+       (set! (.-height canvas) h)
+       (set! (.-width style)  (str (* scale w) "px"))
+       (set! (.-height style) (str (* scale h) "px"))
 
-     (set! (.-transformOrigin style) (str (* scale h 0.5) "px " (* scale h 0.5) "px"))
-     (set! (.-transform style) (if rotate? "rotate(90deg)" ""))
+       (set! (.-transformOrigin style) (str (* scale h 0.5) "px " (* scale h 0.5) "px"))
+       (set! (.-transform style) (if rotate? "rotate(90deg)" ""))
 
-     (.translate ctx (:x screen-pos) (:y screen-pos)))
-   (render!)))
+       (.translate ctx (:x screen-pos) (:y screen-pos))
+       (render!)))))
 
 (defn reload! []
-  (set! js/window.onresize on-resize)
+  (set! js/window.onresize
+    (fn [e]
+      (on-resize e)
+      (js/setTimeout on-resize 100))) ;; iOS Safari in Home Screen mode fires too early
   (on-resize))
 
 (defn window->screen [wpos]
